@@ -1,25 +1,24 @@
 package com.narxoz.rpg.decorator;
 
 public class FireRuneDecorator extends ActionDecorator {
+    private static final int FIRE_BONUS = 4;
+
     public FireRuneDecorator(AttackAction wrappedAction) {
         super(wrappedAction);
     }
 
     @Override
     public String getActionName() {
-        // TODO: Decide how this decorator changes the visible action name.
-        return super.getActionName();
+        return super.getActionName() + " + FireRune";
     }
 
     @Override
     public int getDamage() {
-        // TODO: Add fire-related behavior on top of wrapped damage.
-        return super.getDamage();
+        return super.getDamage() + FIRE_BONUS;
     }
 
     @Override
     public String getEffectSummary() {
-        // TODO: Append or compose the fire effect description.
-        return super.getEffectSummary();
+        return super.getEffectSummary() + " | Fire(+" + FIRE_BONUS + ")";
     }
 }
