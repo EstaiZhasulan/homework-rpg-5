@@ -1,25 +1,24 @@
 package com.narxoz.rpg.decorator;
 
 public class PoisonCoatingDecorator extends ActionDecorator {
+    private static final int POISON_BONUS = 3;
+
     public PoisonCoatingDecorator(AttackAction wrappedAction) {
         super(wrappedAction);
     }
 
     @Override
     public String getActionName() {
-        // TODO: Decide how this decorator changes the visible action name.
-        return super.getActionName();
+        return super.getActionName() + " + Poison";
     }
 
     @Override
     public int getDamage() {
-        // TODO: Add poison-related behavior on top of wrapped damage.
-        return super.getDamage();
+        return super.getDamage() + POISON_BONUS;
     }
 
     @Override
     public String getEffectSummary() {
-        // TODO: Append or compose the poison effect description.
-        return super.getEffectSummary();
+        return super.getEffectSummary() + " | Poison(+" + POISON_BONUS + ")";
     }
 }
