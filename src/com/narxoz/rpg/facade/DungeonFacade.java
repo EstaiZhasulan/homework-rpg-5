@@ -13,17 +13,37 @@ public class DungeonFacade {
         battleService.setRandomSeed(seed);
         return this;
     }
-
     public AdventureResult runAdventure(HeroProfile hero, BossEnemy boss, AttackAction action) {
-        // TODO: Coordinate subsystem calls in a clean order.
-        // Suggested flow:
-        // 1) preparation
-        // 2) battle
-        // 3) reward
-        AdventureResult result = battleService.battle(hero, boss, action);
+        AdventureResult finalResult = new AdventureResult();
+
+        finalResult.setHeroName(hero != null ? hero.getName() : null);
+        finalResult.setBossName(boss != null ? boss.getName() : null);
+
+        finalResult.addLine("=== Adventure Start ===");
+
         String preparationSummary = preparationService.prepare(hero, boss, action);
-        result.addLine(preparationSummary);
-        result.setReward(rewardService.determineReward(result));
-        return result;
+        finalResult.addLine(preparationSummary);
+
+        if (preparationSummary.startsWith("Preparation FAILED")) {
+            finalResult.setWinner("Draw");
+            finalResult.setRounds(0);
+            finalResult.setReward("No reward (preparation failed)");
+            finalResult.addLine("=== Adventure End ===");
+            return finalResult;
+        }
+
+        AdventureResult battleResult = battleService.battle(hero, boss, action);
+        for (String line : battleResult.getLog()) {
+            finalResult.addLine(line);
+        }
+        finalResult.setWinner(battleResult.getWinner());
+        finalResult.setRounds(battleResult.getRounds());
+
+        String reward = rewardService.determineReward(finalResult);
+        finalResult.setReward(reward);
+        finalResult.addLine("Reward: " + reward);
+
+        finalResult.addLine("=== Adventure End ===");
+        return finalResult;
     }
 }
