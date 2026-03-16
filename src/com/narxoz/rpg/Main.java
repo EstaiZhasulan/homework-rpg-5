@@ -14,45 +14,77 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== Homework 5 Demo: Decorator + Facade ===\n");
 
-        // TODO: Create a hero and a boss with your own meaningful stats.
-        HeroProfile hero = new HeroProfile("TODO Hero", 100);
-        BossEnemy boss = new BossEnemy("TODO Boss", 120, 15);
+        AttackAction base = new BasicAttack("Strike", 10);
 
-        // TODO: Start with a base action and then create several decorated versions.
-        AttackAction basic = new BasicAttack("Strike", 10);
-        AttackAction enhanced = new FireRuneDecorator(
+        AttackAction fireOnly = new FireRuneDecorator(base);
+        AttackAction poisonOnly = new PoisonCoatingDecorator(base);
+
+        AttackAction orderA = new CriticalFocusDecorator(new FireRuneDecorator(base));
+        AttackAction orderB = new FireRuneDecorator(new CriticalFocusDecorator(base));
+
+        AttackAction multiLayer = new FireRuneDecorator(
                 new PoisonCoatingDecorator(
-                        new CriticalFocusDecorator(basic)
+                        new CriticalFocusDecorator(base)
                 )
         );
 
-        System.out.println("--- Decorator Preview ---");
-        System.out.println("Base action: " + basic.getActionName());
-        System.out.println("Base damage: " + basic.getDamage());
-        System.out.println("Base effects: " + basic.getEffectSummary());
-        System.out.println();
-        System.out.println("Enhanced action: " + enhanced.getActionName());
-        System.out.println("Enhanced damage: " + enhanced.getDamage());
-        System.out.println("Enhanced effects: " + enhanced.getEffectSummary());
+        System.out.println("--- Decorator Demo ---");
+        printAction("Base", base);
+        printAction("Fire only", fireOnly);
+        printAction("Poison only", poisonOnly);
 
-        // TODO: Replace the placeholder preview above with richer proof of runtime composition.
+        System.out.println("\nDecorator order matters:");
+        printAction("Focus(Fire(Base))", orderA);
+        printAction("Fire(Focus(Base))", orderB);
 
-        System.out.println("\n--- Facade Preview ---");
-        DungeonFacade facade = new DungeonFacade().setRandomSeed(42L);
-        AdventureResult result = facade.runAdventure(hero, boss, enhanced);
+        System.out.println("\nMulti-layer chain:");
+        printAction("Fire(Poison(Focus(Base)))", multiLayer);
 
+
+        System.out.println("\n--- Facade Demo: Full Dungeon Run ---");
+        long seed = 42L;
+
+        AdventureResult run1 = runAdventure(seed, multiLayer);
+        AdventureResult run2 = runAdventure(seed, multiLayer);
+
+        boolean deterministic = run1.getWinner().equals(run2.getWinner())
+                && run1.getRounds() == run2.getRounds()
+                && run1.getLog().equals(run2.getLog());
+
+        System.out.println("Deterministic with seed " + seed + "? " + deterministic);
+
+        printAdventureResult("Run #1", run1);
+
+        long differentSeed = 7L;
+        AdventureResult run3 = runAdventure(differentSeed, multiLayer);
+        System.out.println("\nDifferent seed (" + differentSeed + ") changes log? " + !run1.getLog().equals(run3.getLog()));
+
+        System.out.println("\n=== Demo Complete ===");
+    }
+
+    private static AdventureResult runAdventure(long seed, AttackAction action) {
+        HeroProfile hero = new HeroProfile("Arthas", 120);
+        BossEnemy boss = new BossEnemy("Lich King", 180, 18);
+
+        DungeonFacade facade = new DungeonFacade().setRandomSeed(seed);
+        return facade.runAdventure(hero, boss, action);
+    }
+
+    private static void printAction(String label, AttackAction action) {
+        System.out.println(label + ":");
+        System.out.println("  name   = " + action.getActionName());
+        System.out.println("  damage = " + action.getDamage());
+        System.out.println("  effects= " + action.getEffectSummary());
+    }
+
+    private static void printAdventureResult(String title, AdventureResult result) {
+        System.out.println("\n=== " + title + " ===");
         System.out.println("Winner: " + result.getWinner());
         System.out.println("Rounds: " + result.getRounds());
         System.out.println("Reward: " + result.getReward());
+        System.out.println("--- Log ---");
         for (String line : result.getLog()) {
             System.out.println(line);
         }
-
-        // TODO: Expand this demo so it clearly proves:
-        // 1) multiple decorator combinations
-        // 2) one full dungeon run through the facade
-        // 3) readable final summary
-
-        System.out.println("\n=== Demo Complete ===");
     }
 }
